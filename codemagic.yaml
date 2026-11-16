@@ -21,6 +21,22 @@ workflows:
           plutil -replace CFBundleName -string "达货遥控器" "$PLIST"
           plutil -replace CFBundleDisplayName -string "达货遥控器" "$PLIST"
           plutil -p "$PLIST" | grep -E "CFBundle(Name|DisplayName)"
+      - name: Patch iOS permissions
+        script: |
+          cd dsh-mobile-app
+          PLIST=ios/Runner/Info.plist
+          PB=/usr/libexec/PlistBuddy
+          $PB -c "Delete :NSCameraUsageDescription" "$PLIST" 2>/dev/null || true
+          $PB -c "Add :NSCameraUsageDescription string 用于扫描电脑上的连接二维码" "$PLIST"
+          $PB -c "Delete :NSLocalNetworkUsageDescription" "$PLIST" 2>/dev/null || true
+          $PB -c "Add :NSLocalNetworkUsageDescription string 用于连接局域网内的电脑" "$PLIST"
+          $PB -c "Delete :NSAppTransportSecurity" "$PLIST" 2>/dev/null || true
+          $PB -c "Add :NSAppTransportSecurity dict" "$PLIST"
+          $PB -c "Add :NSAppTransportSecurity:NSAllowsArbitraryLoads bool true" "$PLIST"
+          echo "--- patched Info.plist ---"
+          $PB -c "Print :NSCameraUsageDescription" "$PLIST"
+          $PB -c "Print :NSLocalNetworkUsageDescription" "$PLIST"
+          $PB -c "Print :NSAppTransportSecurity" "$PLIST"
       - name: Resolve packages
         script: |
           cd dsh-mobile-app
