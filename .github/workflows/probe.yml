@@ -1,0 +1,24 @@
+name: Probe runners
+
+on:
+  workflow_dispatch:
+
+jobs:
+  linux:
+    name: Linux probe
+    runs-on: ubuntu-latest
+    steps:
+      - name: Echo
+        run: |
+          echo "linux ok"
+          uname -a
+
+  mac:
+    name: Mac probe
+    runs-on: macos-14
+    steps:
+      - name: Echo
+        run: |
+          echo "mac ok"
+          sw_vers
+          xcodebuild -version
