@@ -1,0 +1,38 @@
+workflows:
+  ios-unsigned:
+    name: DSH Remote - iOS unsigned IPA
+    instance_type: mac_mini_m2
+    max_build_duration: 60
+    environment:
+      flutter: 3.47.0
+      xcode: latest
+      cocoapods: default
+    scripts:
+      - name: Ensure iOS platform exists
+        script: |
+          cd dsh-mobile-app
+          if [ ! -d ios ]; then
+            flutter create . --platforms=ios
+          fi
+      - name: Resolve packages
+        script: |
+          cd dsh-mobile-app
+          flutter pub get
+      - name: Build unsigned iOS app
+        script: |
+          cd dsh-mobile-app
+          flutter build ios --release --no-codesign
+      - name: Package into IPA
+        script: |
+          set -e
+          APP=$(find dsh-mobile-app/build/ios/iphoneos -maxdepth 1 -name "*.app" -type d | head -1)
+          echo "App bundle: $APP"
+          rm -rf build_payload
+          mkdir -p build_payload/Payload
+          cp -R "$APP" build_payload/Payload/
+          cd build_payload
+          zip -qry ../DSH-Remote-unsigned.ipa Payload
+          cd ..
+          ls -lh DSH-Remote-unsigned.ipa
+    artifacts:
+      - DSH-Remote-unsigned.ipa
