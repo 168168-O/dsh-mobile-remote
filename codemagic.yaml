@@ -14,6 +14,13 @@ workflows:
           if [ ! -d ios ]; then
             flutter create . --platforms=ios
           fi
+      - name: Set app display name
+        script: |
+          cd dsh-mobile-app
+          PLIST=ios/Runner/Info.plist
+          plutil -replace CFBundleName -string "达货遥控器" "$PLIST"
+          plutil -replace CFBundleDisplayName -string "达货遥控器" "$PLIST"
+          plutil -p "$PLIST" | grep -E "CFBundle(Name|DisplayName)"
       - name: Resolve packages
         script: |
           cd dsh-mobile-app
