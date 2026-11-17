@@ -16,6 +16,7 @@ jobs:
   build-ios:
     name: Build unsigned IPA for TrollStore
     runs-on: macos-latest
+
     steps:
       - name: Checkout repo
         uses: actions/checkout@v4
@@ -33,6 +34,20 @@ jobs:
             echo "No ios/ dir found, generating..."
             flutter create . --platforms=ios
           fi
+
+      - name: Patch Info.plist (camera / local network / HTTP)
+        working-directory: dsh-mobile-app
+        run: |
+          PLIST="ios/Runner/Info.plist"
+          /usr/libexec/PlistBuddy -c "Delete :NSCameraUsageDescription" "$PLIST" 2>/dev/null || true
+          /usr/libexec/PlistBuddy -c "Add :NSCameraUsageDescription string 扫描电脑上的连接二维码" "$PLIST"
+          /usr/libexec/PlistBuddy -c "Delete :NSLocalNetworkUsageDescription" "$PLIST" 2>/dev/null || true
+          /usr/libexec/PlistBuddy -c "Add :NSLocalNetworkUsageDescription string 连接局域网内的电脑" "$PLIST"
+          /usr/libexec/PlistBuddy -c "Delete :NSAppTransportSecurity" "$PLIST" 2>/dev/null || true
+          /usr/libexec/PlistBuddy -c "Add :NSAppTransportSecurity dict" "$PLIST"
+          /usr/libexec/PlistBuddy -c "Add :NSAppTransportSecurity:NSAllowsArbitraryLoads bool true" "$PLIST"
+          echo "=== Patched Info.plist (permissions) ==="
+          /usr/libexec/PlistBuddy -c "Print" "$PLIST" | grep -E "Camera|LocalNetwork|AppTransport|Arbitrary" -A1 || true
 
       - name: Install CocoaPods
         run: gem install cocoapods --no-document
