@@ -35,10 +35,12 @@ jobs:
             flutter create . --platforms=ios
           fi
 
-      - name: Patch Info.plist (camera / local network / HTTP)
+      - name: Patch Info.plist (display name / camera / local network / HTTP)
         working-directory: dsh-mobile-app
         run: |
           PLIST="ios/Runner/Info.plist"
+          /usr/libexec/PlistBuddy -c "Set :CFBundleDisplayName 达货遥控器" "$PLIST" || /usr/libexec/PlistBuddy -c "Add :CFBundleDisplayName string 达货遥控器" "$PLIST"
+          /usr/libexec/PlistBuddy -c "Set :CFBundleName 达货遥控器" "$PLIST" || true
           /usr/libexec/PlistBuddy -c "Delete :NSCameraUsageDescription" "$PLIST" 2>/dev/null || true
           /usr/libexec/PlistBuddy -c "Add :NSCameraUsageDescription string 扫描电脑上的连接二维码" "$PLIST"
           /usr/libexec/PlistBuddy -c "Delete :NSLocalNetworkUsageDescription" "$PLIST" 2>/dev/null || true
